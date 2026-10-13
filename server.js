@@ -197,7 +197,7 @@ ${itemRows}
 <text x="548" y="${balanceY}" font-size="14">Bal.</text>
 <text x="704" y="${balanceY}" text-anchor="middle" font-size="14">${money(balance)}</text>
 <text x="548" y="${totalY}" font-size="14">Total</text>
-<text x="704" y="${totalY}" text-anchor="middle" font-size="14">${money(total)}</text>
+<text x="704" y="${totalY}" text-anchor="middle" font-size="14">${money(balance)}</text>
 
 <text x="774" y="${footerY}" text-anchor="end" font-size="14">For DEVIDAS HEALTHCARE SERVICES</text>
 ${signature ? `<image href="${signature}" x="535" y="${footerY + 10}" width="190" height="48"/>` : ''}
