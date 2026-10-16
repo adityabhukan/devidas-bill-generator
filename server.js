@@ -1,5 +1,7 @@
 const express = require("express");
 const sharp = require("sharp");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -57,9 +59,33 @@ function quantityFromLabel(label) {
   return match ? Number(match[1]) : 1;
 }
 
+// Load local image files and embed them into the SVG as data URIs.
+function getImageBase64(filename) {
+  const imagePath = path.join(__dirname, "public", filename);
+
+  if (!fs.existsSync(imagePath)) {
+    console.warn(`Optional bill image not found: ${imagePath}`);
+    return "";
+  }
+
+  const extension = path.extname(filename).toLowerCase();
+
+  const mimeType =
+    extension === ".jpg" || extension === ".jpeg"
+      ? "image/jpeg"
+      : extension === ".webp"
+        ? "image/webp"
+        : "image/png";
+
+  return `data:${mimeType};base64,${fs.readFileSync(imagePath).toString("base64")}`;
+}
+
 // -------------------- BILL IMAGE --------------------
 
 function createBillSvg(data) {
+  const logo = getImageBase64("logo.png");
+  const signature = getImageBase64("signature.png");
+
   const items = data.items.map((item) => {
     const qtyLabel = String(item.qtyLabel || "").trim();
     const qty = quantityFromLabel(qtyLabel);
@@ -136,6 +162,18 @@ function createBillSvg(data) {
   <rect width="794" height="${svgHeight}" fill="white"/>
 
   <g font-family="Arial, Helvetica, sans-serif" fill="#111">
+
+    <!-- Company logo -->
+    ${logo ? `
+      <image
+        href="${logo}"
+        x="20"
+        y="95"
+        width="107"
+        height="103"
+        preserveAspectRatio="xMidYMid meet"
+      />
+    ` : ""}
 
     <!-- Company Header -->
 
@@ -397,6 +435,18 @@ function createBillSvg(data) {
           font-size="14">
       Receiver Signature
     </text>
+
+    <!-- Signature image -->
+    ${signature ? `
+      <image
+        href="${signature}"
+        x="535"
+        y="${footerY + 10}"
+        width="190"
+        height="48"
+        preserveAspectRatio="xMidYMid meet"
+      />
+    ` : ""}
 
     <text x="646" y="${footerY + 100}"
           text-anchor="middle"
